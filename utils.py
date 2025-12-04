@@ -53,8 +53,8 @@ def filter_by(data):
     return data
 
 def add_column_status_delivery(data):
-    status_delivery = lambda x: 'delayed' if x > 7 else 'on'
-    data['status_delivery'] = data.shipping_days.apply(status_delivery)
+    status_delivery = lambda x: 'delayed' if x > 7 else 'on time'
+    data['status_delivery'] = data.shipping_days.transform(status_delivery)
     return data 
 
 def save_data_to_csv(data):
