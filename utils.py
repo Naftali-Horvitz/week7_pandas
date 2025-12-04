@@ -2,44 +2,60 @@ import pandas as pd
 
 path = "orders_simple.json"
 
-def load_json(path):
+def load_json(path: str):
     return pd.read_json(path)
     
-def change_column_amount_Total(data):
+def change_amount_Total_to_float(data : pd.DataFrame):
     to_float = lambda x: float(x[:-1])
-    return data.total_amount.apply(to_float)
+    data.total_amount = data.total_amount.apply(to_float)
+    return data
+def change_float_to_int(data : pd.DataFrame, column_name):    # this is a generic func
+    to_int = lambda x: float(x)
+    data[column_name] = data[column_name].apply(to_int)
+    return data
 
-def change_int_to_float(data, column_name):
-    to_float = lambda x: float(x)
-    return data[column_name].apply(to_float)
-    
+def change_int_to_float(data : pd.DataFrame, column_name):     # this is a generic func
+    to_float = lambda x: int(x)
+    data[column_name] = data[column_name].apply(to_float)
+    return data
+
 def str_to_date(data):
-    return pd.to_datetime(data.order_date)
+    data.order_date = pd.to_datetime(data.order_date)
+    return data
    
 def clean_column_html(data):
-    return data.items_html.replace(r'<[^<>]*>', '', regex=True)
+    data.items_html = data.items_html.replace(r'<[^<>]*>', '', regex=True)
+    return data
 
 def handel_coupon_used_column(data):
-    return data.coupon_used.replace('', 'coupon no')
+    data.coupon_used = data.coupon_used.replace('', 'coupon no')
+    return data
 
 def add_month_order_column(data):
-    return data.order_date.dt.month
+    data['month_order'] = data.order_date.dt.month
+    return data
 
 def add_order_value_high_column(data):
     avg = data.total_amount.mean()
-    return(data.total_amount > avg)
+    data['order_value_high'] = (data.total_amount > avg)
+    return data
     
 def sort_by_column(data):
-    return data.sort_values(by='total_amount', ascending= False)   
+    data =  data.sort_values(by='total_amount', ascending= False)   
+    return data
     
 def add_rating_avg_column(data: pd.DataFrame):
-    return data.groupby('country')['rating'].transform("mean")
+    data['rating_avg_by_column'] =  data.groupby('country')['rating'].transform("mean")
+    return data
 
 def filter_by(data):
-    return data[(data['total_amount'] > 1000) & (data['rating'] > 4.5)]
+    data =  data[(data['total_amount'] > 1000) & (data['rating'] > 4.5)]
+    return data
 
-def status_delivery():
-    return lambda x: 'delayed' if x > 7 else 'on'
+def add_column_status_delivery(data):
+    status_delivery = lambda x: 'delayed' if x > 7 else 'on'
+    data['status_delivery'] = data.shipping_days.apply(status_delivery)
+    return data 
 
 def save_data_to_csv(data):
     data.to_csv('clean_orders_[315605808].csv')
